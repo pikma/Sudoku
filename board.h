@@ -15,6 +15,7 @@ class Board
 
         void applyMove(int index, int number);
         void undoMove(int index);
+        bool isSolution() const;
 
         /* Returns the first empty cell of the board, or -1 if there is no empty
          * cell.

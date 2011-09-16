@@ -8,19 +8,16 @@ class Backtrack
     public:
         Backtrack();
         void explore(Board &b);
-        long getNbLeafsExplored() const;
-        long getNbBranchs() const;
+        unsigned long getNbCalls() const;
 
     private:
         bool isSolution(const Board &);
         void processSolution(const Board &);
         void getNextMovePosition(const Board &, int &index, int *candidates, int &nbCandidates);
 
-        bool _finished;
         static const int MAX_NB_CANDIDATES = 9;
-        int _candidates[MAX_NB_CANDIDATES];
-        long _nbLeafs;
-        long _nbBranchs;
+        unsigned long _nbCalls;
+        bool _finished;
 };
 
 #endif

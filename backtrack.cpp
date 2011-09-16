@@ -5,8 +5,7 @@
 const int Backtrack::MAX_NB_CANDIDATES;
 
 Backtrack::Backtrack():
-    _nbLeafs(0),
-    _nbBranchs(0),
+    _nbCalls(0),
     _finished(false)
 {
 
@@ -15,14 +14,17 @@ Backtrack::Backtrack():
 /* The main backtracking method */
 void Backtrack::explore(Board &b)
 {
-    _nbBranchs++;
+    _nbCalls++;
     // std::cout << "Backtrack::explore(Board &) :: board:\n" << b.toString() << std::endl;
     if (isSolution(b)) {
         processSolution(b);
     }
     else {
         int index, nbCandidates;
-        getNextMovePosition(b, index, _candidates, nbCandidates);
+        int candidates[MAX_NB_CANDIDATES];
+
+        getNextMovePosition(b, index, candidates, nbCandidates);
+        // std::cout << "===========================================";
         // std::cout << "Position (index) == " << index << ", \n";
         // std::cout << "   candidates = [";
         // for (int i = 0; i < nbCandidates; i++) {
@@ -31,14 +33,21 @@ void Backtrack::explore(Board &b)
             // std::cout << _candidates[i];
         // }
         // std::cout << "]\n";
+        // std::cout << b.toString() << std::endl;
 
         for (int i = 0; i < nbCandidates; i++) {
-            b.applyMove(index, _candidates[i]);
+            b.applyMove(index, candidates[i]);
             explore(b);
             b.undoMove(index);
             if (_finished)
                 return;
         }
+
+        // if (nbCandidates == 0 && index > 70) {
+            // std::cout << "Leaf position (next index == " << index << "):\n";
+            // std::cout << b.toString() << std::endl;
+        // }
+
     }
 }
 
@@ -51,26 +60,20 @@ void Backtrack::getNextMovePosition(const Board &b, int &index,
     b.getCandidates(index, candidates, nbCandidates);
 }
 
-long Backtrack::getNbLeafsExplored() const
+unsigned long Backtrack::getNbCalls() const
 {
-    return _nbLeafs;
-}
-
-long Backtrack::getNbBranchs() const
-{
-    return _nbBranchs;
+    return _nbCalls;
 }
 
 bool Backtrack::isSolution(const Board &b)
 {
-    _nbLeafs++;
     return b.getFirstEmptyCell() == -1;
 }
 
 void Backtrack::processSolution(const Board & b)
 {
-    std::cout << "Solution found:\n";
-    std::cout << b.toString();
-    std::cout << std::endl;
     _finished = true;
+    std::cout << "Solution found:\n";
+    std::cout << b.toString() << std::endl;
+    std::cout << "Number of calls to explore(): " << _nbCalls << std::endl;
 }

@@ -4,10 +4,15 @@
 
 int main(int argc, char ** argv)
 {
-    Board b("easySudoku.txt");
+    const char * filename = NULL;
+    if (argc < 2) {
+        filename = "easySudoku.txt";
+    }
+    else {
+        filename = argv[1];
+    }
+    Board b(filename);
     std::cout << "Initial configuration:\n" << b.toString() << std::endl;
     Backtrack backtrack;
     backtrack.explore(b);
-    std::cout << "Nb leafs explored: " << backtrack.getNbLeafsExplored() << std::endl;
-    std::cout << "Nb branchs: " << backtrack.getNbBranchs() << std::endl;
 }

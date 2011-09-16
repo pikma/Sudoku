@@ -10,6 +10,9 @@ const int Board::NO_NUMBER;
 Board::Board()
 {
     _numbers = new int[NB_CELLS];
+    for (int i = 0; i < NB_CELLS; i++) {
+        _numbers[i] = NO_NUMBER;
+    }
 }
 
 Board::~Board()
@@ -31,7 +34,7 @@ Board::Board(const char * filename)
             while (i < line.length()) {
                 char c = line.at(i);
                 if (c == '#') {
-                    _numbers[index] = -1;
+                    _numbers[index] = NO_NUMBER;
                 }
                 else {
                     int number = c - '0';
@@ -177,15 +180,11 @@ void Board::getCandidates(int index, int *candidates, int &nbCandidates) const
     }
 }
 
-// inline
-// int Board::indexFromCoord(int x, int y)
-// {
-// return x * DIMENSION + y;
-// }
-
-// inline
-// void Board::coordFromIndex(int index, int &x, int &y)
-// {
-// x = index / DIMENSION;
-// y = index % DIMENSION;
-// }
+bool Board::isSolution() const
+{
+    for (int i = 0; i < NB_CELLS; i++) {
+        if (_numbers[i] == NO_NUMBER)
+            return false;
+    }
+    return true;
+}
