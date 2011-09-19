@@ -1,6 +1,6 @@
 #  CC=g++ -Wall -pg -O3 # profile
-CC=g++ -Wall -g # debug
-#  CC=g++ -Wall  -O2 # release
+#  CC=g++ -Wall -g # debug
+CC=g++ -Wall  -O2 # release
 SRCS=$(wildcard *.cpp)
 OBJS=$(patsubst %.cpp,%.o,$(SRCS))
 DEPS=$(patsubst %.cpp,%.d,$(SRCS))
@@ -19,6 +19,6 @@ $(OBJS): %.o: %.cpp
 -include $(DEPS)
 
 clean:
-	rm -f *.o *.d
+	rm -f *.o *.d gmon.out
 
 

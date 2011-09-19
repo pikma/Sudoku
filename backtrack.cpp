@@ -2,7 +2,6 @@
 #include <iostream>
 
 
-const int Backtrack::MAX_NB_CANDIDATES;
 
 Backtrack::Backtrack():
     _nbCalls(0),
@@ -21,19 +20,9 @@ void Backtrack::explore(Board &b)
     }
     else {
         int index, nbCandidates;
-        int candidates[MAX_NB_CANDIDATES];
+        int candidates[Board::MAX_NB_CANDIDATES];
 
         getNextMovePosition(b, index, candidates, nbCandidates);
-        // std::cout << "===========================================";
-        // std::cout << "Position (index) == " << index << ", \n";
-        // std::cout << "   candidates = [";
-        // for (int i = 0; i < nbCandidates; i++) {
-            // if (i != 0)
-                // std::cout << ", ";
-            // std::cout << _candidates[i];
-        // }
-        // std::cout << "]\n";
-        // std::cout << b.toString() << std::endl;
 
         for (int i = 0; i < nbCandidates; i++) {
             b.applyMove(index, candidates[i]);
@@ -42,22 +31,15 @@ void Backtrack::explore(Board &b)
             if (_finished)
                 return;
         }
-
-        // if (nbCandidates == 0 && index > 70) {
-            // std::cout << "Leaf position (next index == " << index << "):\n";
-            // std::cout << b.toString() << std::endl;
-        // }
-
     }
 }
 
 /* Returns the position of the next move, with the candidates for this next move
  */
-void Backtrack::getNextMovePosition(const Board &b, int &index,
+void Backtrack::getNextMovePosition(Board &b, int &index,
         int *candidates, int &nbCandidates)
 {
-    index = b.getFirstEmptyCell();
-    b.getCandidates(index, candidates, nbCandidates);
+    b.getMostConstrainedCell(index, candidates, nbCandidates);
 }
 
 unsigned long Backtrack::getNbCalls() const
@@ -75,5 +57,4 @@ void Backtrack::processSolution(const Board & b)
     _finished = true;
     std::cout << "Solution found:\n";
     std::cout << b.toString() << std::endl;
-    std::cout << "Number of calls to explore(): " << _nbCalls << std::endl;
 }

@@ -15,4 +15,13 @@ int main(int argc, char ** argv)
     std::cout << "Initial configuration:\n" << b.toString() << std::endl;
     Backtrack backtrack;
     backtrack.explore(b);
+
+    if (!backtrack.hasFinished()) {
+        std::cout << "There is no solution." << std::endl;
+    }
+    std::cout << "Nb calls to explore(): " << backtrack.getNbCalls();
+    std::cout << std::endl;
+    std::cout << "Nb calls to getCandidates(): " << b.getNbGetCandidatesCall();
+    std::cout << std::endl;
 }
+

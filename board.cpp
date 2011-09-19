@@ -6,8 +6,14 @@
 const int Board::DIMENSION;
 const int Board::NB_CELLS;
 const int Board::NO_NUMBER;
+const int Board::MAX_NB_CANDIDATES;
 
-Board::Board()
+////////////////////////////////////////////////////////////////////////////////
+// Constructors
+////////////////////////////////////////////////////////////////////////////////
+
+Board::Board():
+    _nbGetCandidatesCall(0)
 {
     _numbers = new int[NB_CELLS];
     for (int i = 0; i < NB_CELLS; i++) {
@@ -20,7 +26,8 @@ Board::~Board()
     delete[] _numbers;
 }
 
-Board::Board(const char * filename)
+Board::Board(const char * filename):
+    _nbGetCandidatesCall(0)
 {
     _numbers = new int[NB_CELLS];
 
@@ -64,6 +71,25 @@ Board::Board(const char * filename)
 
 }
 
+Board::Board(const Board & b):
+    _nbGetCandidatesCall(b._nbGetCandidatesCall)
+{
+    _numbers = new int[NB_CELLS];
+    for (int i = 0; i < NB_CELLS; i++) {
+        _numbers[i] = b._numbers[i];
+    }
+}
+
+Board& Board::operator=(const Board b)
+{
+    _numbers = b._numbers;
+    return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Public Methods
+////////////////////////////////////////////////////////////////////////////////
+
 std::string Board::toString() const
 {
     std::string result = "";
@@ -101,20 +127,6 @@ std::string Board::toString() const
     return result;
 }
 
-Board::Board(const Board & b)
-{
-    _numbers = new int[NB_CELLS];
-    for (int i = 0; i < NB_CELLS; i++) {
-        _numbers[i] = b._numbers[i];
-    }
-}
-
-Board& Board::operator=(const Board b)
-{
-    _numbers = b._numbers;
-    return *this;
-}
-
 void Board::applyMove(int index, int number)
 {
     _numbers[index] = number;
@@ -134,8 +146,9 @@ int Board::getFirstEmptyCell() const
     return -1;
 }
 
-void Board::getCandidates(int index, int *candidates, int &nbCandidates) const
+void Board::getCandidates(int index, int *candidates, int &nbCandidates)
 {
+    _nbGetCandidatesCall++;
     bool isCandidate[DIMENSION+1]; // we ignore the [0] cell, numbers are from 1 to 9
     for (int i = 1; i <= DIMENSION; i++)
         isCandidate[i] = true;
@@ -187,4 +200,41 @@ bool Board::isSolution() const
             return false;
     }
     return true;
+}
+
+void Board::getMostConstrainedCell(int &index, int *candidates,
+        int &nbCandidates)
+{
+    // we store the result of getCandidates into two temporary variables
+    int currentCandidates[MAX_NB_CANDIDATES];
+    int currentNbCandidates;
+
+    nbCandidates = MAX_NB_CANDIDATES + 1; // this will be the minimum
+    index = -1; // in case all the cells are filled
+
+    for (int i = 0; i < NB_CELLS; i++) {
+        if (_numbers[i] != NO_NUMBER)
+            continue;
+
+        getCandidates(i, currentCandidates, currentNbCandidates);
+
+        if (currentNbCandidates < nbCandidates) {
+            nbCandidates = currentNbCandidates;
+            index = i;
+            for (int j = 0; j < MAX_NB_CANDIDATES; j++) {
+                candidates[j] = currentCandidates[j];
+            }
+        }
+
+        if (nbCandidates <= 1)
+            return;
+        /* Here, we could put (nbCandidates == 0) instead. It proves to make
+         * about twice as many calls to getCandidates() on the hardest sudoku.
+         */
+    }
+}
+
+unsigned long Board::getNbGetCandidatesCall()
+{
+    return _nbGetCandidatesCall;
 }

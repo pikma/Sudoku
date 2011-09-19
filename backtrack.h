@@ -9,13 +9,13 @@ class Backtrack
         Backtrack();
         void explore(Board &b);
         unsigned long getNbCalls() const;
+        bool hasFinished() { return _finished; };
 
     private:
         bool isSolution(const Board &);
         void processSolution(const Board &);
-        void getNextMovePosition(const Board &, int &index, int *candidates, int &nbCandidates);
+        void getNextMovePosition(Board &, int &index, int *candidates, int &nbCandidates);
 
-        static const int MAX_NB_CANDIDATES = 9;
         unsigned long _nbCalls;
         bool _finished;
 };
