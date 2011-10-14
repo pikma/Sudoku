@@ -1,1 +1,12 @@
 A C++ program to solve sudokus using backtracking.
+
+Install: 
+run "make"
+
+Usage:
+./main fileName
+
+Three file examples are given:
+ - easySudoku.txt (super easy)
+ - leMondeSudoku.txt (hard)
+ - sudokuHardest.txt (evil)
