@@ -16,7 +16,7 @@ int main(int argc, char ** argv)
     Backtrack backtrack;
     backtrack.explore(b);
 
-    if (!backtrack.hasFinished()) {
+    if (!backtrack.hasSolution()) {
         std::cout << "There is no solution." << std::endl;
     }
     std::cout << "Nb calls to explore(): " << backtrack.getNbCalls();

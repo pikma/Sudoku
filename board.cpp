@@ -37,30 +37,7 @@ Board::Board(const char * filename):
         int index = 0;
         while (inputFile.good()) {
             std::getline(inputFile, line);
-            unsigned int i = 0;
-            while (i < line.length()) {
-                char c = line.at(i);
-                if (c == '#') {
-                    _numbers[index] = NO_NUMBER;
-                }
-                else {
-                    int number = c - '0';
-                    _numbers[index] = number;
-                }
-                index++;
-
-                i++;
-
-                while (i < line.length() && (line.at(i) == ' ' || line.at(i) == '\n'))
-                    i++;
-
-            }
-            if (index % DIMENSION != 0) {
-                std::cerr << "Error in input file, line:\n";
-                std::cerr << "   " << line << "\n";
-                std::cerr << "Index = " << index << ", should be a multiple of " << DIMENSION << "\n";
-                exit(EXIT_FAILURE);
-            }
+            parseLine(line, index);
         }
         inputFile.close();
     }
@@ -82,9 +59,48 @@ Board::Board(const Board & b):
 
 Board& Board::operator=(const Board b)
 {
-    _numbers = b._numbers;
+    for (int i = 0; i < NB_CELLS; i++) {
+        _numbers[i] = b._numbers[i];
+    }
     return *this;
 }
+
+void
+Board::parseLine(std::string line, int & index)
+{
+    unsigned int i = 0;
+    while (i < line.length()) {
+        char c = line.at(i);
+        parseChar(c, index);
+        index++;
+        i++;
+
+        // discard the whitespaces
+        while (i < line.length() && (line.at(i) == ' '))
+            i++;
+    }
+
+    // Error checking
+    if (index % DIMENSION != 0) {
+        std::cerr << "Error in input file, line:\n";
+        std::cerr << "   " << line << "\n";
+        std::cerr << "Index = " << index << ", should be a multiple of " << DIMENSION << "\n";
+        exit(EXIT_FAILURE);
+    }
+}
+
+void
+Board::parseChar(char c, int index)
+{
+    if (c == '#') {
+        _numbers[index] = NO_NUMBER;
+    }
+    else {
+        int number = c - '0';
+        _numbers[index] = number;
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public Methods
@@ -94,31 +110,39 @@ std::string Board::toString() const
 {
     std::string result = "";
     for (int i = 0; i < DIMENSION; i++) {
-        // Print horizontal line
-        if (i % 3 == 0) {
-            for (int j = 0; j < 25; j++) {
-                result += "-";
-            }
-            result += "\n";
-        }
+        if (i % 3 == 0) // zone delimiter
+            result += Board::horizontalLine();
 
-        // Print line of numbers
-        for (int j = 0; j < DIMENSION; j++) {
-            if (j % 3 == 0) // with vertical line
-                result += "| ";
-            int index = i * DIMENSION + j;
-            if (_numbers[index] == NO_NUMBER) {
-                result += " ";
-            }
-            else {
-                result += '0' + _numbers[index];
-            }
-            result +=  " ";
-        }
-        result += "|\n";
+        result += stringFromLine(i);
     }
 
-    // Print one last horizontal line
+    result += Board::horizontalLine(); // the last line
+    return result;
+}
+
+std::string
+Board::stringFromLine(int lineIndex) const
+{
+    std::string result;
+    for (int j = 0; j < DIMENSION; j++) {
+        if (j % 3 == 0) // zone delimiter
+            result += "| ";
+        int index = lineIndex * DIMENSION + j;
+        if (_numbers[index] == NO_NUMBER) {
+            result += " ";
+        }
+        else {
+            result += '0' + _numbers[index];
+        }
+        result +=  " ";
+    }
+    result += "|\n";
+    return result;
+}
+
+std::string
+Board::horizontalLine() {
+    std::string result;
     for (int j = 0; j < 25; j++) {
         result += "-";
     }
@@ -127,17 +151,20 @@ std::string Board::toString() const
     return result;
 }
 
-void Board::applyMove(int index, int number)
+void
+Board::applyMove(int index, int number)
 {
     _numbers[index] = number;
 }
 
-void Board::undoMove(int index)
+void
+Board::undoMove(int index)
 {
     _numbers[index] = NO_NUMBER;
 }
 
-int Board::getFirstEmptyCell() const
+int
+Board::getFirstEmptyCell() const
 {
     for (int i = 0; i < NB_CELLS; i++) {
         if (_numbers[i] == NO_NUMBER)
@@ -146,21 +173,44 @@ int Board::getFirstEmptyCell() const
     return -1;
 }
 
-void Board::getCandidates(int index, int *candidates, int &nbCandidates)
+void
+Board::getCandidates(int index, int *candidates, int &nbCandidates)
 {
     _nbGetCandidatesCall++;
     bool isCandidate[DIMENSION+1]; // we ignore the [0] cell, numbers are from 1 to 9
     for (int i = 1; i <= DIMENSION; i++)
         isCandidate[i] = true;
 
-    // Line
+    // Reduce the set of candidates
+    reduceCandidatesByLine(index, isCandidate);
+    reduceCandidatesByColumn(index, isCandidate);
+    reduceCandidatesByZone(index, isCandidate);
+
+
+    // Copy the result in the arguments
+    nbCandidates = 0;
+    for (int i = 1; i <= DIMENSION; i++) {
+        if (isCandidate[i]) {
+            candidates[nbCandidates] = i;
+            nbCandidates++;
+        }
+    }
+}
+
+void
+Board::reduceCandidatesByLine(int index, bool *isCandidate)
+{
     int firstOfLine = index - (index % DIMENSION);
     for (int i = firstOfLine; i < firstOfLine + DIMENSION; i++) {
         int number = _numbers[i];
         if (number != NO_NUMBER)
             isCandidate[number] = false;
     }
+}
 
+void
+Board::reduceCandidatesByColumn(int index, bool *isCandidate)
+{
     // Column
     int firstOfCol = index % 9;
     for (int i = firstOfCol; i < NB_CELLS; i += DIMENSION) {
@@ -168,8 +218,11 @@ void Board::getCandidates(int index, int *candidates, int &nbCandidates)
         if (number != NO_NUMBER)
             isCandidate[number] = false;
     }
+}
 
-    // Zone
+void
+Board::reduceCandidatesByZone(int index, bool *isCandidate)
+{
     int colIx = index % 9;
     int lineIx = index / 9;
     int zoneFirstColIx = colIx - (colIx % 3);
@@ -183,17 +236,10 @@ void Board::getCandidates(int index, int *candidates, int &nbCandidates)
         }
         firstCell += DIMENSION;
     }
-
-    nbCandidates = 0;
-    for (int i = 1; i <= DIMENSION; i++) {
-        if (isCandidate[i]) {
-            candidates[nbCandidates] = i;
-            nbCandidates++;
-        }
-    }
 }
 
-bool Board::isSolution() const
+bool
+Board::isSolution() const
 {
     for (int i = 0; i < NB_CELLS; i++) {
         if (_numbers[i] == NO_NUMBER)
@@ -202,7 +248,8 @@ bool Board::isSolution() const
     return true;
 }
 
-void Board::getMostConstrainedCell(int &index, int *candidates,
+void
+Board::getMostConstrainedCell(int &index, int *candidates,
         int &nbCandidates)
 {
     // we store the result of getCandidates into two temporary variables
@@ -234,7 +281,8 @@ void Board::getMostConstrainedCell(int &index, int *candidates,
     }
 }
 
-unsigned long Board::getNbGetCandidatesCall()
+unsigned long
+Board::getNbGetCandidatesCall()
 {
     return _nbGetCandidatesCall;
 }

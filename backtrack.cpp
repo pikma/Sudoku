@@ -1,21 +1,19 @@
 #include "./backtrack.h"
 #include <iostream>
 
-
-
 Backtrack::Backtrack():
     _nbCalls(0),
     _finished(false)
 {
-
 }
 
-/* The main backtracking method */
+// The main backtracking method
 void Backtrack::explore(Board &b)
 {
     _nbCalls++;
     // std::cout << "Backtrack::explore(Board &) :: board:\n" << b.toString() << std::endl;
-    if (isSolution(b)) {
+    if (isFull(b)) {
+        // we assume that the graph given is correct
         processSolution(b);
     }
     else {
@@ -34,24 +32,20 @@ void Backtrack::explore(Board &b)
     }
 }
 
-/* Returns the position of the next move, with the candidates for this next move
- */
+// Returns the position of the next move, with the candidates for this next move
 void Backtrack::getNextMovePosition(Board &b, int &index,
         int *candidates, int &nbCandidates)
 {
     b.getMostConstrainedCell(index, candidates, nbCandidates);
 }
 
-unsigned long Backtrack::getNbCalls() const
-{
-    return _nbCalls;
-}
-
-bool Backtrack::isSolution(const Board &b)
+// Returns true if the board doesn't have any empty cell
+bool Backtrack::isFull(const Board &b)
 {
     return b.getFirstEmptyCell() == -1;
 }
 
+// Callback when a solution is found.
 void Backtrack::processSolution(const Board & b)
 {
     _finished = true;

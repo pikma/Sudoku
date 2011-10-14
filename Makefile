@@ -1,4 +1,4 @@
-#  CC=g++ -Wall -pg -O3 # profile
+#  CC=g++ -Wall -pg # profile
 #  CC=g++ -Wall -g # debug
 CC=g++ -Wall  -O2 # release
 SRCS=$(wildcard *.cpp)
